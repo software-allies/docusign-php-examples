@@ -2,24 +2,34 @@
 
 require_once('../vendor/autoload.php');
 
+$dotenv = new Dotenv\Dotenv(__DIR__);
+$dotenv->load();
+
 
 class DocuSignEmbeddedSignature
 {
     private $loginAccount;
     private $apiClient;
+    private $templateId;
     public $debug;
 
     public function __construct()
     {
         $this->debug=false;
+        $this->templateId = getenv('DS_TEMPLATE_ID');  
     }
 
 
     public function authenticate() 
     {
-        $username = "";
-        $password = "";
-        $integrator_key = "";     
+        $username = getenv('DS_USERNAME');
+        $password = getenv('DS_PASSWORD');
+        $integratorKey = getenv('DS_KEY');
+        
+        if($this->debug) {
+            echo "template id: {$templateId}<\br>";
+        }
+
 
         // change to production (www.docusign.net) before going live
         $host = "https://demo.docusign.net/restapi";
@@ -27,7 +37,7 @@ class DocuSignEmbeddedSignature
         // create configuration object and configure custom auth header
         $config = new DocuSign\eSign\Configuration();
         $config->setHost($host);
-        $config->addDefaultHeader("X-DocuSign-Authentication", "{\"Username\":\"" . $username . "\",\"Password\":\"" . $password . "\",\"IntegratorKey\":\"" . $integrator_key . "\"}");
+        $config->addDefaultHeader("X-DocuSign-Authentication", "{\"Username\":\"" . $username . "\",\"Password\":\"" . $password . "\",\"IntegratorKey\":\"" . $integratorKey . "\"}");
 
         // instantiate a new docusign api client
         $this->apiClient = new DocuSign\eSign\ApiClient($config);
@@ -90,7 +100,7 @@ class DocuSignEmbeddedSignature
                 {
                     // set recipient information
                     $recipientName = "RECIPIENT NAME";
-                    $recipientEmail = "recipentname@test.lan";
+                    $recipientEmail = "jason+recipentname@softwareallies.com";
 
                         // configure the document we want signed
                     $documentFileName = "/var/www/test_signature_document.pdf";
@@ -205,7 +215,7 @@ class DocuSignEmbeddedSignature
                 {
                     // set recipient information
                     $recipientName = "John Doe";
-                    $recipientEmail = "johndoe@test.lan";
+                    $recipientEmail = "jason@softwareallies.com";
 
                     $textTab = new \DocuSign\eSign\Model\Text();
                     
@@ -229,7 +239,7 @@ class DocuSignEmbeddedSignature
 
                     $envelop_definition = new DocuSign\eSign\Model\EnvelopeDefinition();
                     $envelop_definition->setEmailSubject("Please sign this doc");
-                    $envelop_definition->setTemplateId("XXXXXXXXXXXXXXX");
+                    $envelop_definition->setTemplateId($this->templateId);
                     $envelop_definition->setTemplateRoles(array($templateRole));
                     
 
